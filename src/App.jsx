@@ -3,27 +3,32 @@ import s from './App.module.css';
 function App() {
   let dayInputRef, monthInputRef, yearInputRef, calendarBtnRef;
 
-  const highlightField = (ref) => {
-    ref.focus()
+  const highlightField = ref => {
+    ref.focus();
     setTimeout(() => {
-      ref.setSelectionRange(0, ref.value.length)
+      if (ref.setSelectionRange && typeof ref.setSelectionRange === 'function')
+        ref.setSelectionRange(0, ref.value.length);
     }, 0);
-  }
+  };
 
   function handleKeydown(e, ref) {
     switch (ref.id) {
       case 'day':
-        if (e.code === 'ArrowLeft') highlightField(dayInputRef)
-        if (e.code === 'ArrowRight') highlightField(monthInputRef)
+        if (e.code === 'ArrowLeft') highlightField(dayInputRef);
+        if (e.code === 'ArrowRight') highlightField(monthInputRef);
         break;
       case 'month':
-        if (e.code === 'ArrowLeft') highlightField(dayInputRef)
-        if (e.code === 'ArrowRight') highlightField(yearInputRef)
+        if (e.code === 'ArrowLeft') highlightField(dayInputRef);
+        if (e.code === 'ArrowRight') highlightField(yearInputRef);
         break;
       case 'year':
-        if (e.code === 'ArrowLeft') highlightField(monthInputRef)
-        if (e.code === 'ArrowRight') highlightField(calendarBtnRef)
+        if (e.code === 'ArrowLeft') highlightField(monthInputRef);
+        if (e.code === 'ArrowRight') highlightField(calendarBtnRef);
         break;
+      case 'calendar-btn':
+        if (e.code === 'ArrowLeft') highlightField(yearInputRef);
+        if (e.code === 'ArrowRight') highlightField(calendarBtnRef);
+
       default:
         return;
     }
@@ -32,80 +37,106 @@ function App() {
 
   function handleDayInput(e) {
     let v;
-    v = e.currentTarget.value.length > 2 ?
-      e.currentTarget.value.slice(0, 2) : e.currentTarget.value
+    v =
+      e.currentTarget.value.length > 2
+        ? e.currentTarget.value.slice(0, 2)
+        : e.currentTarget.value;
 
-    v = v.replace(/\D/g, "")
+    v = v.replace(/\D/g, '');
     console.log({ v });
 
     if (v === '' || v === '00') {
-      v = 'dd'
-      highlightField(dayInputRef)
-      return dayInputRef.value = v
+      v = 'dd';
+      highlightField(dayInputRef);
+      return (dayInputRef.value = v);
     }
 
-    if (v.length === 2 && v[0] === "0") {
-      highlightField(monthInputRef)
-      return dayInputRef.value = v
+    if (v.length === 2 && v[0] === '0') {
+      highlightField(monthInputRef);
+      return (dayInputRef.value = v);
     }
 
     if (+v > 3) {
       if (+v < 10) {
-        v = `0${v}`
+        v = `0${v}`;
+      }
+      if (+v > 31) {
+        v = '31';
       }
 
-      highlightField(monthInputRef)
-      return dayInputRef.value = v
+      highlightField(monthInputRef);
+      return (dayInputRef.value = v);
     }
   }
 
-  // function handleMonthInput(e) {
-  //   let v;
-  //   v = e.currentTarget.value.length > 2 ?
-  //     e.currentTarget.value.slice(0, 2) : e.currentTarget.value
+  function handleMonthInput(e) {
+    let v;
+    v =
+      e.currentTarget.value.length > 2
+        ? e.currentTarget.value.slice(0, 2)
+        : e.currentTarget.value;
 
-  //   v = v.replace(/\D/g, "")
-  //   console.log({ v });
+    v = v.replace(/\D/g, '');
+    console.log({ v });
 
-  //   if (v === '' || v === '00') {
-  //     v = 'mm'
-  //     highlightField(monthInputRef)
-  //     return monthInputRef.value = v
-  //   }
+    if (v === '' || v === '00') {
+      v = 'mm';
+      highlightField(monthInputRef);
+      return (monthInputRef.value = v);
+    }
 
-  //   if (v.length === 2 && v[0] === "0") {
-  //     highlightField(yearInputRef)
-  //     return monthInputRef.value = v
-  //   }
+    if (v.length === 2 && v[0] === '0') {
+      highlightField(yearInputRef);
+      return (monthInputRef.value = v);
+    }
 
-  //   if (+v > 3) {
-  //     if (+v < 10) {
-  //       v = `0${v}`
-  //     }
+    if (+v > 1) {
+      if (+v < 10) {
+        v = `0${v}`;
+      }
+      if (+v > 12) {
+        v = '12';
+      }
 
-  //     highlightField(monthInputRef)
-  //     return monthInputRef.value = v
-  //   }
-  // }
+      highlightField(yearInputRef);
+      return (monthInputRef.value = v);
+    }
+  }
 
+  function handleYearInput(e) {
+    let v;
+    v =
+      e.currentTarget.value.length > 4
+        ? e.currentTarget.value.slice(0, 4)
+        : e.currentTarget.value;
+
+    v = v.replace(/\D/g, '');
+    console.log({ v });
+
+    if (v === '') {
+      v = 'yyyy';
+      highlightField(yearInputRef);
+    }
+
+    yearInputRef.value = v
+  }
 
   function adjustField(e, ref, type) {
-    let val = e.currentTarget.value
+    let val = e.currentTarget.value;
+
+    if (type === 'year') {
+      val = parseInt(val);
+      if (Number.isNaN(val)) {
+        val = 'yyyy'
+      }
+      return (ref.value = val);
+    }
+
     if (val.length === 1) {
-      val = `0${val}`
+      val = `0${val}`;
+      return (ref.value = val);
     }
-
-    switch (type) {
-      case 'day':
-        if (+val > 31) {
-          ref.value = 31
-        }
-        break;
-      case 'month':
-      case 'year':
-    }
-
-    ref.value = val
+    return (ref.value = val);
   }
 
   return (
@@ -130,10 +161,10 @@ function App() {
         type="text"
         value="mm"
         id="month"
-        // onInput={handleMonthInput}
+        onInput={handleMonthInput}
         onKeyDown={e => handleKeydown(e, monthInputRef)}
         onFocus={e => highlightField(monthInputRef)}
-        onBlur={e => adjustField(e, dayInputRef, 'month')}
+        onBlur={e => adjustField(e, monthInputRef, 'month')}
 
       // onFocus={e => {
       //   monthInputRef.setSelectionRange(
@@ -147,9 +178,10 @@ function App() {
         type="text"
         value="yyyy"
         id="year"
+        onInput={handleYearInput}
         onKeyDown={e => handleKeydown(e, yearInputRef)}
         onFocus={e => highlightField(yearInputRef)}
-        onBlur={e => adjustField(e, dayInputRef, 'year')}
+        onBlur={e => adjustField(e, yearInputRef, 'year')}
       // onFocus={e => {
       //   yearInputRef.setSelectionRange(
       //     0,
@@ -157,7 +189,7 @@ function App() {
       //   );
       // }}
       />
-      <button ref={calendarBtnRef}>Cal</button>
+      <button ref={calendarBtnRef} onKeyDown={e => handleKeydown(e, calendarBtnRef)} id="calendar-btn">Cal</button>
     </div>
   );
 }
